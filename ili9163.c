@@ -2,7 +2,7 @@
 #include <stdio.h> // printf
 #include <stdarg.h> // va_list, va_start, va_arg, va_end
 
-uint8_t frameBuffer[BUFSIZE] = {0};
+uint16_t frameBuffer[BUFSIZE] = {0};
 
 extern SPI_HandleTypeDef DISP_SPI;
 extern uint8_t SPI_DMA_FL;
@@ -50,7 +50,7 @@ void ILI9163_setAddress(uint16_t x1,uint16_t y1,uint16_t x2,uint16_t y2) {
 void ILI9163_reset(void)
 {
 	HAL_GPIO_WritePin(DISP_RST_Port, DISP_RST_Pin, 0);
-	HAL_Delay(10);
+	HAL_Delay(50);
 
 	HAL_GPIO_WritePin(DISP_RST_Port, DISP_RST_Pin, 1);
 	HAL_Delay(100);
@@ -161,8 +161,8 @@ void ILI9163_init(int rotation) {
 
 void ILI9163_newFrame()
 {
-	for(uint32_t i= 0; i < (ILI9163_WIDTH*ILI9163_HEIGHT)*2; i++)
-		frameBuffer[i] = 0xFF;
+	for(uint32_t i= 0; i < (ILI9163_WIDTH*ILI9163_HEIGHT); i++)
+		frameBuffer[i] = 0xFFFF;
 }
 
 void ILI9163_render()
@@ -171,27 +171,27 @@ void ILI9163_render()
 	HAL_GPIO_WritePin(DISP_CS_Port, DISP_CS_Pin, 0);
 	HAL_GPIO_WritePin(DISP_DC_Port, DISP_DC_Pin, 1);
 
-	HAL_SPI_Transmit_DMA(&DISP_SPI, frameBuffer, BUFSIZE);
+	HAL_SPI_Transmit_DMA(&DISP_SPI, (uint8_t*)frameBuffer, BUFSIZE*2);
 	while(!SPI_DMA_FL) {}
 
 	HAL_GPIO_WritePin(DISP_CS_Port, DISP_CS_Pin, 1);
 	SPI_DMA_FL=0;
 }
 
-void ILI9163_drawPixel(uint16_t x, uint16_t y, uint16_t color) {
+void ILI9163_drawPixel(uint8_t x, uint8_t y, uint16_t color) {
 	if ((x < 0) || (x >= ILI9163_WIDTH) || (y < 0) || (y >= ILI9163_HEIGHT)) return;
-	frameBuffer[((x*2)+(y*2*ILI9163_WIDTH))] = color >> 8;
-	frameBuffer[((x*2)+(y*2*ILI9163_WIDTH))+1] = color & 0xFF;
+	frameBuffer[((x)+(y*ILI9163_WIDTH))] = color;// >> 8;
+	//frameBuffer[((x*2)+(y*2*ILI9163_WIDTH))+1] = color & 0xFF;
 }
 
-void ILI9163_fillRect(uint16_t x1, uint16_t y1, uint16_t x2, uint16_t y2, uint16_t color)
+void ILI9163_fillRect(uint8_t x1, uint8_t y1, uint8_t x2, uint8_t y2, uint16_t color)
 {
-	for(uint16_t x = x1; x < x2; x++)
-		for(uint16_t y = y1; y < y2; y++)
+	for(uint8_t x = x1; x < x2; x++)
+		for(uint8_t y = y1; y < y2; y++)
 			ILI9163_drawPixel(x, y, color);
 }
 
-void ILI9163_drawRect(uint16_t x1,uint16_t y1,uint16_t x2,uint16_t y2, uint16_t thickness, uint16_t color) {
+void ILI9163_drawRect(uint8_t x1,uint8_t y1,uint8_t x2,uint8_t y2, uint8_t thickness, uint16_t color) {
 	ILI9163_fillRect(x1, y1, x2, y1+thickness, color);
 	ILI9163_fillRect(x1, y2-thickness, x2, y2, color);
 
@@ -199,7 +199,7 @@ void ILI9163_drawRect(uint16_t x1,uint16_t y1,uint16_t x2,uint16_t y2, uint16_t 
 	ILI9163_fillRect(x2-thickness, y1, x2, y2, color);
 }
 
-void ILI9163_drawLine(uint16_t x0, uint16_t y0, uint16_t x1, uint16_t y1, uint16_t color) {
+void ILI9163_drawLine(uint8_t x0, uint8_t y0, uint8_t x1, uint8_t y1, uint16_t color) {
 	uint16_t dy = y1 - y0;
 	uint16_t dx = x1 - x0;
 	uint16_t stepx, stepy;
@@ -247,14 +247,14 @@ void ILI9163_drawLine(uint16_t x0, uint16_t y0, uint16_t x1, uint16_t y1, uint16
 }
 
 
-void ILI9163_fillCircle(uint16_t centerX, uint16_t centerY, uint16_t radius, uint16_t color) {
+void ILI9163_fillCircle(uint8_t centerX, uint8_t centerY, uint8_t radius, uint16_t color) {
 	for(int y=-radius; y<=radius; y++)
 		for(int x=-radius; x<=radius; x++)
 			if(x*x+y*y <= radius*radius)
 				ILI9163_drawPixel(centerX+x, centerY+y, color);
 }
 
-void ILI9163_drawCircle(uint16_t centerX, uint16_t centerY, uint16_t radius, uint16_t color) { // From the Adafruit GFX library
+void ILI9163_drawCircle(uint8_t centerX, uint8_t centerY, uint8_t radius, uint16_t color) { // From the Adafruit GFX library
 	radius--; // inner outline
 	int16_t f = 1 - radius;
 	int16_t ddF_x = 1;
@@ -292,8 +292,8 @@ void ILI9163_fillDisplay(uint16_t color) {
 	ILI9163_fillRect(0,0, ILI9163_WIDTH, ILI9163_HEIGHT, color);
 }
 
-void ILI9163_drawChar(uint16_t x, uint16_t y, char ch, FontDef font, uint16_t color) {
-	uint32_t i, b, j;
+void ILI9163_drawChar(uint8_t x, uint8_t y, char ch, FontDef font, uint16_t color) {
+	uint16_t i, b, j;
 	for(i = 0; i < font.height; i++) {
 		b = font.data[(ch - 32) * font.height + i];
 		for(j = 0; j < font.width; j++) {
@@ -304,7 +304,7 @@ void ILI9163_drawChar(uint16_t x, uint16_t y, char ch, FontDef font, uint16_t co
 	}
 }
 
-void ILI9163_drawString(uint16_t x, uint16_t y, FontDef font, uint16_t color, const char *string) {
+void ILI9163_drawString(uint8_t x, uint8_t y, FontDef font, uint16_t color, const char *string) {
 	while(*string) {
 		if(x + font.width >= ILI9163_WIDTH) {
 			x = 0;
@@ -326,7 +326,7 @@ void ILI9163_drawString(uint16_t x, uint16_t y, FontDef font, uint16_t color, co
 	}
 }
 
-void ILI9163_drawStringF(uint16_t x, uint16_t y, FontDef font, uint16_t color, char *szFormat, ...) {
+void ILI9163_drawStringF(uint8_t x, uint8_t y, FontDef font, uint16_t color, char *szFormat, ...) {
 	char szBuffer[64];
 	va_list pArgs;
 	va_start(pArgs, szFormat);

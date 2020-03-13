@@ -15,7 +15,7 @@ To eliminate this, advanced techniques may be used, but this driver applies the 
 - Code quality - the driver is in a relatively raw state, and while fully functional and relatively optimized, I didn't put a serious amount of time into it, so anyone who wonders inside, prepare for horrors.
 
 ## Usage
-SPI DMA must be set up in circular mode, single byte data width, memory to peripheral. Ensure that all the display pins are set to the highest drive strength possible on your chip. At higher SPI clock rates, it won't work if they're not.
+SPI DMA must be set up in circular mode, *half world*(16 bit) width, memory to peripheral. Ensure that all the display pins are set to the highest drive strength possible on your chip. At higher SPI clock rates, it won't work if they're not.
 
 Include the required files, then declare the following variables somewhere:
 ```C

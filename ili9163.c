@@ -172,10 +172,9 @@ void ILI9163_render()
 	HAL_GPIO_WritePin(DISP_DC_Port, DISP_DC_Pin, 1);
 
 	HAL_SPI_Transmit_DMA(&DISP_SPI, (uint8_t*)frameBuffer, BUFSIZE*2);
-	while(!SPI_DMA_FL) {}
 
-	HAL_GPIO_WritePin(DISP_CS_Port, DISP_CS_Pin, 1);
 	SPI_DMA_FL=0;
+	while(!SPI_DMA_FL) {} // This can be commented out if your thread sends new frames slower than SPI transmits them. Otherwise, memory havoc. See README.md
 }
 
 void ILI9163_drawPixel(uint8_t x, uint8_t y, uint16_t color) {

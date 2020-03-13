@@ -4,7 +4,7 @@
 A simple, very fast ILI9163C display driver written in C for STM32, using HAL, DMA, and a full frame buffer.
 ## Pros
 
-- Blazing fast - with SPI running at 40MHz, this driver can update the display running in 16-bit color mode at over 20 frames per second, with little tearing to be seen.
+- Blazing fast - with SPI running at 41.5MHz, this driver can update the display running in 16-bit color mode at over **80 frames per second**, with little tearing to be seen.
 - Low amount of processing power required on the instruction end - all the graphical functions write to a frame buffer, eliminating constant polled SPI transactions.
 - It *works*. I've encountered many issues while trying to run several ILI9163C displays(which are technically compatible with the ST7735), but as far as I can tell, this driver will run just about all of them in landscape and inverted landscape modes.
 

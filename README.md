@@ -56,6 +56,14 @@ And finally, tell the driver to send the buffer to the display(this is a blockin
 ILI9163_render();
 ```
 
+## Blocking DMA!?
+Why is the ``while(!SPI_DMA_FL) {}`` wait there?
+The answer is simple. DMA transfers take a non-zero amount of time, and if you start writing to the buffer before it has been fully sent, havoc will be had in the memory controller, as you'd be trying to talk to an inaccessible point in RAM, somewhere within the buffer.
+
+The way this is solved in devices with larger amounts of RAM is by means of *double-buffering* - where two buffers are interchangeably sent, with a flag telling the DMA driver when to switch to the newly written buffer. But even a single buffer is huge, so this wasn't implemented.
+
+The wait in this case is equal to +-one frame time, but if your thread runs at a sane frame rate(24 or 60Hz for example), you can let DMA free-run in the background and remove the wait completely, thus eliminating wasted CPU cycles.
+
 ## Stuff
 This library is unmaintained and is licensed under the MIT license. Pull requests are welcome.
 If you see some of your code in this library, let me know and I will credit you.

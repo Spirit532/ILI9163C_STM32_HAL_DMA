@@ -150,10 +150,12 @@ void ILI9163_init(int rotation) {
 	ILI9163_writeData(ILI9163_WIDTH-1); // 160 pixels y
 
 	ILI9163_writeCommand(ILI9163_CMD_SET_ADDRESS_MODE);
+	ILI9163_writeCommand(ILI9163_CMD_SET_ADDRESS_MODE);
+	
 	if(rotation)
-		ILI9163_writeData(160);
+		ILI9163_writeData(0x40 | 0x20 | 0x08);
 	else
-		ILI9163_writeData(96);
+		ILI9163_writeData(0x40 | 0x20 | 0x08);
 
 	ILI9163_writeCommand(ILI9163_CMD_SET_DISPLAY_ON);
 	ILI9163_writeCommand(ILI9163_CMD_WRITE_MEMORY_START);

@@ -108,6 +108,7 @@ void ILI9163_init(int rotation) {
 	ILI9163_writeData(0x2b);
 	ILI9163_writeData(0x3a);
 
+
 	ILI9163_writeCommand(ILI9163_CMD_FRAME_RATE_CONTROL1);
 	ILI9163_writeData(0x08); // DIVA = 8
 	ILI9163_writeData(0x02); // VPA = 8
@@ -123,6 +124,7 @@ void ILI9163_init(int rotation) {
 	ILI9163_writeCommand(ILI9163_CMD_DISPLAY_INVERSION);
 	ILI9163_writeData(0x07); // NLA = 1, NLB = 1, NLC = 1 (all on Frame Inversion)
 
+	/* This bit may cause minor compatibility issues, so it's commented out. Beware.
 	ILI9163_writeCommand(ILI9163_CMD_POWER_CONTROL1);
 	ILI9163_writeData(0x0a); // VRH = 10:  GVDD = 4.30
 	ILI9163_writeData(0x02); // VC = 2: VCI1 = 2.65
@@ -136,6 +138,7 @@ void ILI9163_init(int rotation) {
 
 	ILI9163_writeCommand(ILI9163_CMD_VCOM_OFFSET_CONTROL);
 	ILI9163_writeData(0x40); // nVM = 0, VMF = 64: VCOMH output = VMH, VCOML output = VML
+	*/
 
 	ILI9163_writeCommand(ILI9163_CMD_SET_COLUMN_ADDRESS);
 	ILI9163_writeData(0x00); // XSH
@@ -150,13 +153,12 @@ void ILI9163_init(int rotation) {
 	ILI9163_writeData(ILI9163_WIDTH-1); // 160 pixels y
 
 	ILI9163_writeCommand(ILI9163_CMD_SET_ADDRESS_MODE);
-	ILI9163_writeCommand(ILI9163_CMD_SET_ADDRESS_MODE);
-	
 	if(rotation)
-		ILI9163_writeData(0x40 | 0x20 | 0x08);
+		ILI9163_writeData(0x80 | 0x20 | 0x08);
 	else
 		ILI9163_writeData(0x40 | 0x20 | 0x08);
 
+	ILI9163_writeCommand(ILI9163_CMD_ENTER_NORMAL_MODE);
 	ILI9163_writeCommand(ILI9163_CMD_SET_DISPLAY_ON);
 	ILI9163_writeCommand(ILI9163_CMD_WRITE_MEMORY_START);
 }
